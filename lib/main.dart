@@ -1,58 +1,79 @@
-import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void main() {
   runApp(const App());
 }
 
-class Home extends StatelessWidget {
-  const Home({super.key});
+class CardUsingBuilderContext extends StatelessWidget {
+  const CardUsingBuilderContext({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute<dynamic>(
-                settings: const RouteSettings(name: '/page'),
-                builder: (BuildContext context) => const Page(),
-              ),
-            );
-          },
-          child: const Text("Push route"),
-        ),
+    return GridView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        // comps + default card margin 87 + 8
+        mainAxisExtent: 95,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
       ),
+      cacheExtent: 0,
+      shrinkWrap: true,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: 4,
+      itemBuilder: (BuildContext context, int index) {
+        return Card(
+          child: Center(
+            child: Text(AppLocalizations.of(context)!.test),
+          ),
+        );
+      },
     );
   }
 }
 
-class Page extends StatefulWidget {
-  const Page({super.key});
+class CardUsingWidgetContext extends StatelessWidget {
+  const CardUsingWidgetContext({super.key});
 
-  @override
-  State<Page> createState() => _Page();
-}
-
-class _Page extends State<Page> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.orange,
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Flushbar<dynamic>(
-              flushbarPosition: FlushbarPosition.TOP,
-              message: "test",
-            ).show(context);
-          },
-          child: const Text("Launch flushbar"),
-        ),
+    return GridView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        // comps + default card margin 87 + 8
+        mainAxisExtent: 95,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
       ),
+      cacheExtent: 0,
+      shrinkWrap: true,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: 4,
+      itemBuilder: (BuildContext _, int index) {
+        return Card(
+          child: Center(
+            child: Text(AppLocalizations.of(context)!.test),
+          ),
+        );
+      },
     );
+  }
+}
+
+class AppSettings extends ChangeNotifier {
+  bool darkMode;
+
+  AppSettings({
+    this.darkMode = false,
+  });
+
+  void useDarkMode(bool value) {
+    darkMode = value;
+    notifyListeners();
   }
 }
 
@@ -61,8 +82,33 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Home(),
+    return MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const <Locale>[
+        Locale('en'),
+        Locale('fr'),
+      ],
+      home: Builder(
+        builder: (context) {
+          return Scaffold(
+            appBar: AppBar(title: Text(AppLocalizations.of(context)!.test)),
+            body: Column(
+              children: const <Widget>[
+                // Broken
+                CardUsingBuilderContext(),
+                Divider(),
+                // Working
+                CardUsingWidgetContext(),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }
